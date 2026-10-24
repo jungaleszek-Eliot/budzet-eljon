@@ -46,6 +46,18 @@
     display: none !important; 
   }
 </style>
+  .box {
+  position: absolute;
+  cursor: grab;
+  /* Dodaj własne style wyglądu poniżej, np: */
+  width: 100px;
+  height: 100px;
+  background-color: #4CAF50;
+  color: white;
+}
+.box:active {
+  cursor: grabbing;
+}
   <style>
     /* Całkowite ukrycie niechcianych pasków przewijania */
     ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -2266,5 +2278,67 @@ function showUpdateToast() {
     initDynamicEnhancements();
   });
 </script>
+  const boxes = document.querySelectorAll('.box');
+
+boxes.forEach(box => {
+    let isDragging = false;
+    let startX, startY, initialX, initialY;
+
+    // Obsługa myszy i ekranów dotykowych
+    box.addEventListener('mousedown', dragStart);
+    box.addEventListener('touchstart', dragStart, { passive: false });
+
+    function dragStart(e) {
+        isDragging = true;
+        box.style.zIndex = 1000; // Wysuwa przeciągane pudełko na wierzch
+
+        if (e.type === 'touchstart') {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        } else {
+            startX = e.clientX;
+            startY = e.clientY;
+        }
+
+        initialX = box.offsetLeft;
+        initialY = box.offsetTop;
+
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('touchmove', drag, { passive: false });
+        document.addEventListener('mouseup', dragEnd);
+        document.addEventListener('touchend', dragEnd);
+    }
+
+    function drag(e) {
+        if (!isDragging) return;
+        e.preventDefault(); // Blokuje przewijanie ekranu przy przeciąganiu
+
+        let currentX, currentY;
+
+        if (e.type === 'touchmove') {
+            currentX = e.touches[0].clientX;
+            currentY = e.touches[0].clientY;
+        } else {
+            currentX = e.clientX;
+            currentY = e.clientY;
+        }
+
+        let diffX = currentX - startX;
+        let diffY = currentY - startY;
+
+        box.style.left = (initialX + diffX) + 'px';
+        box.style.top = (initialY + diffY) + 'px';
+    }
+
+    function dragEnd() {
+        isDragging = false;
+        box.style.zIndex = ''; // Przywraca standardową warstwę
+
+        document.removeEventListener('mousemove', drag);
+        document.removeEventListener('touchmove', drag);
+        document.removeEventListener('mouseup', dragEnd);
+        document.removeEventListener('touchend', dragEnd);
+    }
+});
 </body>
 </html>
